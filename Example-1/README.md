@@ -160,6 +160,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 I wanna point out some noticeable functions and variables:
+
 **`__printf_chk@plt`**:
 This prints error message (put in `rsi` register, the 2nd parameter) and then exit the program. For example:
 ```
