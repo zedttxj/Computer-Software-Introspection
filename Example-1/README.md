@@ -160,7 +160,7 @@ Dump of assembler code for function main:
 End of assembler dump.
 ```
 I wanna point out some noticeable functions and variables:
-# `__printf_chk@plt`:
+**`__printf_chk@plt`**:
 This prints error message (put in `rsi` register, the 2nd parameter) and then exit the program. For example:
 ```
 0x00000000004013d1 <+301>:   mov    0xd9c8(%rip),%rdi        # 0x40eda0 <stderr@@GLIBC_2.2.5>
@@ -175,7 +175,7 @@ The error message is at 0x4022d1, by using `x/1s 0x4022d1`, we can check the err
 0x4022d1:       "ERROR: invalid directive_code %ux\n"
 ```
 
-# `read_exact`:
+**`read_exact`**:
 This read exact number of bytes (put in rdx register, the 3rd parameter) from our input and put it into address value placed in rsi register (2nd parameter). For example:
 ```
    0x000000000040132a <+134>:   lea    0x10(%rsp),%rbx
@@ -188,7 +188,7 @@ This read exact number of bytes (put in rdx register, the 3rd parameter) from ou
 ```
 Here, there are 12 bytes read from our input and put in the memory at $rsp+0x10
 
-# `desired_output`:
+**`desired_output`**:
 Typically, this is hard-written in the program and will be used to compared (using memcmp@plt from C library) with our actual output. It looks like this:
 ```
 (gdb) x/1s 0x404020
@@ -236,3 +236,9 @@ where 0x738 is the number of the pixels and 24 is the information of each pixel:
 00000080: 3535 3b32 3535 3b32 3535 6d2d 1b5b 306d  55;255;255m-.[0m
 00000090: 1b5b 3338 3b32 3b32 3535 3b32 3535 3b32  .[38;2;255;255;2
 ```
+**`total_data`**
+It represents the actual size of our input. It's only used once at `main+444` to limit the number of input bytes:
+```
+0x0000000000401460 <+444>:   cmpq   $0x53c,0xd945(%rip)        # 0x40edb0 <total_data>
+```
+If our input exceeded 0x53c bytes, the program will exit normally without triggering the `win` function, which is our goal. I figured it out by print the total_data using `p 0x40edb0`
