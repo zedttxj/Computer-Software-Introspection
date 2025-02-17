@@ -174,3 +174,16 @@ The error message is at 0x4022d1, by using `x/1s 0x4022d1`, we can check the err
 (gdb) x/1s 0x4022d1
 0x4022d1:       "ERROR: invalid directive_code %ux\n"
 ```
+
+# `read_exact`:
+This read exact number of bytes (put in rdx register, the 3rd parameter) from our input and put it into address value placed in rsi register (2nd parameter). For example:
+```
+   0x000000000040132a <+134>:   lea    0x10(%rsp),%rbx
+   0x000000000040132f <+139>:   or     $0xffffffff,%r8d
+   0x0000000000401333 <+143>:   xor    %edi,%edi
+   0x0000000000401335 <+145>:   mov    $0xc,%edx
+   0x000000000040133a <+150>:   lea    0xf0d(%rip),%rcx        # 0x40224e
+   0x0000000000401341 <+157>:   mov    %rbx,%rsi
+   0x0000000000401344 <+160>:   call   0x40167b <read_exact>
+```
+Here, there are 12 bytes read from our input and put in the memory at $rsp+0x10
