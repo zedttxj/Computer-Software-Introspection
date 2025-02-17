@@ -187,3 +187,52 @@ This read exact number of bytes (put in rdx register, the 3rd parameter) from ou
    0x0000000000401344 <+160>:   call   0x40167b <read_exact>
 ```
 Here, there are 12 bytes read from our input and put in the memory at $rsp+0x10
+
+# `desired_output`:
+Typically, this is hard-written in the program and will be used to compared (using memcmp@plt from C library) with our actual output. It looks like this:
+```
+(gdb) x/1s 0x404020
+0x404020 <desired_output>:      "\033[38;2;255;255;255m.\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;255;255;255m-\033[0m\033[38;2;2"...
+```
+This is a typical representation of terminal pixel where you see the part 255,255,255 represent the pixel color right after the letter `m` represent the actual character.
+To extract this output to a file, we can use command `dump binary memory dumpfile.bin 0x404020 0x404020+0x738*24`
+where 0x738 is the number of the pixels and 24 is the information of each pixel:
+```
+(gdb) dump binary memory dumpfile.bin 0x404020 0x404020+0x738*24
+(gdb) shell cat dumpfile.bin
+.--------------------------------------------------------------------------.
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                              ___   __  __    ____                        |
+|                        ___  |_ _| |  \/  |  / ___|                       |
+|                       / __|  | |  | |\/| | | |  _                        |
+|                      | (__   | |  | |  | | | |_| |                       |
+|                       \___| |___| |_|  |_|  \____|                       |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+'--------------------------------------------------------------------------'
+(gdb) shell xxd dumpfile.bin | head
+00000000: 1b5b 3338 3b32 3b32 3535 3b32 3535 3b32  .[38;2;255;255;2
+00000010: 3535 6d2e 1b5b 306d 1b5b 3338 3b32 3b32  55m..[0m.[38;2;2
+00000020: 3535 3b32 3535 3b32 3535 6d2d 1b5b 306d  55;255;255m-.[0m
+00000030: 1b5b 3338 3b32 3b32 3535 3b32 3535 3b32  .[38;2;255;255;2
+00000040: 3535 6d2d 1b5b 306d 1b5b 3338 3b32 3b32  55m-.[0m.[38;2;2
+00000050: 3535 3b32 3535 3b32 3535 6d2d 1b5b 306d  55;255;255m-.[0m
+00000060: 1b5b 3338 3b32 3b32 3535 3b32 3535 3b32  .[38;2;255;255;2
+00000070: 3535 6d2d 1b5b 306d 1b5b 3338 3b32 3b32  55m-.[0m.[38;2;2
+00000080: 3535 3b32 3535 3b32 3535 6d2d 1b5b 306d  55;255;255m-.[0m
+00000090: 1b5b 3338 3b32 3b32 3535 3b32 3535 3b32  .[38;2;255;255;2
+```
