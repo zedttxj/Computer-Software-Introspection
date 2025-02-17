@@ -243,3 +243,13 @@ It represents the actual size of our input. It's only used once at `main+444` to
 0x0000000000401460 <+444>:   cmpq   $0x53c,0xd945(%rip)        # 0x40edb0 <total_data>
 ```
 If our input exceeded 0x53c bytes, the program will exit normally without triggering the `win` function, which is our goal. I figured it out by print the total_data using `p 0x40edb0`
+
+I start the program using `start output.cimg` where my output.cimg is my cimg file
+
+#### from `main+63` to `main+90`
+I used `x/1s 0x402224` and saw the message:
+```
+(gdb) x/1s 0x402224
+0x402224:       ".cimg"
+```
+The string ".cimg" (in 2nd parameter or rsi register) is compared with another string. I assume that the other string is the last 4 characters of the name of the file you put in (in this case is `output.cimg`). The `test %eax, %eax` checks if the value of strcmp is 0, then jump if it's 0.
