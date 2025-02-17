@@ -18,6 +18,7 @@ In this section, we will analyze the `main` function in the `/challenge.cimg` fi
 
 *GDB Disassembly Output*
 
+```
 (gdb) disass main
 Dump of assembler code for function main:
    0x00000000004012a4 <+0>:     endbr64
@@ -157,3 +158,4 @@ Dump of assembler code for function main:
    0x000000000040149c <+504>:   pop    %r15
    0x000000000040149e <+506>:   ret
 End of assembler dump.
+```
