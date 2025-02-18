@@ -693,3 +693,5 @@ with open('./output.cimg','wb') as output:
 ```
 ![{6F39844A-9E5B-4B85-BD0E-AFD2259FCCCA}](https://github.com/user-attachments/assets/1bd5660a-30b4-4361-8465-91b2dd329f50)
 This time, the image moves a little. After a few tries, I figured out that the first 2 bytes adjust the position of the image. Instead of writing the whole images, we can just write only a few pixels that aren't blank (not the empty space character). By filtering it out, we can reduce significantly the size of our .cimg file:
+![{09147DF2-9662-4E53-AE5C-32C247392BBA}](https://github.com/user-attachments/assets/2d005a50-d045-485c-98ce-98392de63a3d)
+That's great! The size of our .cimg was reduced down to 2762. However, this is still long and to reduce the size of the image further, it would requires some algorithm skills. Basically, we have to divide our data into chunk of rectangles. That way we can reduce unnecessary bytes from calling too many directives.
