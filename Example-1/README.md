@@ -11,8 +11,8 @@ Approach Suggestion: This level will require you to create a cimage with multipl
 - Your first several attempts at this will likely result in an error message. Do not simply guess at how to fix this error message! Instead, use a combination of a graphical reversing tool and a debugger (gdb) to actually understand which check is failing, and adjust your input to avoid failing this check.
 - Writing your cimage by hand will be very error-prone. Consider creating a Python script to generate cimages. Your script should somewhat mirror the parser library, with a function to generate the cimage header and functions for every directive that you want to support. This will make your life MUCH easier in this and future levels.
 
-## My Approach
-# Analysis of `main` Function in `/challenge.cimg`
+# My Approach
+## Analysis of `main` Function in `/challenge.cimg`
 
 In this section, we will analyze the `main` function in the `/challenge.cimg` file, which is the primary program responsible for processing the `.cimg` file. The analysis begins with the disassembly of the `main` function using **GDB**.
 
@@ -346,3 +346,142 @@ The value is returned to `eax` after calling a function. The next 2 instructions
 
 #### from `main+444` to end
 The instruction at `main+444` compare our actual size of our .cimg file by bytes (stored at total_data). If our size exceeds 0x53c, the program will exit normally without triggering the `win` function. The instruction at `main+457` checks if `bl` is equal to 1. If that's the case, the program won't jump and will trigger `win` function. In this case, we would have to keep our number of pixels produced by our .cimg file equal to 0x738
+
+## Analyzing `handle_1` function
+Let's disassemble `handle_1`:
+```
+(gdb) disass handle_1
+Dump of assembler code for function handle_1:
+   0x00000000004016da <+0>:     endbr64
+   0x00000000004016de <+4>:     push   %r15
+   0x00000000004016e0 <+6>:     push   %r14
+   0x00000000004016e2 <+8>:     push   %r13
+   0x00000000004016e4 <+10>:    push   %r12
+   0x00000000004016e6 <+12>:    push   %rbp
+   0x00000000004016e7 <+13>:    push   %rbx
+   0x00000000004016e8 <+14>:    mov    %rdi,%rbx
+   0x00000000004016eb <+17>:    sub    $0x48,%rsp
+   0x00000000004016ef <+21>:    movzbl 0x6(%rdi),%ebp
+   0x00000000004016f3 <+25>:    movzbl 0x7(%rdi),%edx
+   0x00000000004016f7 <+29>:    mov    %fs:0x28,%rax
+   0x0000000000401700 <+38>:    mov    %rax,0x38(%rsp)
+   0x0000000000401705 <+43>:    xor    %eax,%eax
+   0x0000000000401707 <+45>:    imul   %edx,%ebp
+   0x000000000040170a <+48>:    movslq %ebp,%rbp
+   0x000000000040170d <+51>:    shl    $0x2,%rbp
+   0x0000000000401711 <+55>:    mov    %rbp,%rdi
+   0x0000000000401714 <+58>:    call   0x401200 <malloc@plt>
+   0x0000000000401719 <+63>:    test   %rax,%rax
+   0x000000000040171c <+66>:    jne    0x40172c <handle_1+82>
+   0x000000000040171e <+68>:    lea    0x9ae(%rip),%rdi        # 0x4020d3
+   0x0000000000401725 <+75>:    call   0x401170 <puts@plt>
+   0x000000000040172a <+80>:    jmp    0x401783 <handle_1+169>
+   0x000000000040172c <+82>:    mov    %ebp,%edx
+   0x000000000040172e <+84>:    mov    %rax,%rsi
+   0x0000000000401731 <+87>:    or     $0xffffffff,%r8d
+   0x0000000000401735 <+91>:    xor    %edi,%edi
+--Type <RET> for more, q to quit, c to continue without paging--c
+   0x0000000000401737 <+93>:    lea    0x9ca(%rip),%rcx        # 0x402108
+   0x000000000040173e <+100>:   mov    %rax,%r12
+   0x0000000000401741 <+103>:   call   0x40167b <read_exact>
+   0x0000000000401746 <+108>:   movzbl 0x7(%rbx),%eax
+   0x000000000040174a <+112>:   movzbl 0x6(%rbx),%edx
+   0x000000000040174e <+116>:   imul   %eax,%edx
+   0x0000000000401751 <+119>:   xor    %eax,%eax
+   0x0000000000401753 <+121>:   cmp    %eax,%edx
+   0x0000000000401755 <+123>:   jle    0x40178b <handle_1+177>
+   0x0000000000401757 <+125>:   movzbl 0x3(%r12,%rax,4),%ecx
+   0x000000000040175d <+131>:   inc    %rax
+   0x0000000000401760 <+134>:   lea    -0x20(%rcx),%esi
+   0x0000000000401763 <+137>:   cmp    $0x5e,%sil
+   0x0000000000401767 <+141>:   jbe    0x401753 <handle_1+121>
+   0x0000000000401769 <+143>:   mov    0xd630(%rip),%rdi        # 0x40eda0 <stderr@@GLIBC_2.2.5>
+   0x0000000000401770 <+150>:   lea    0x9ad(%rip),%rdx        # 0x402124
+   0x0000000000401777 <+157>:   mov    $0x1,%esi
+   0x000000000040177c <+162>:   xor    %eax,%eax
+   0x000000000040177e <+164>:   call   0x401250 <__fprintf_chk@plt>
+   0x0000000000401783 <+169>:   or     $0xffffffff,%edi
+   0x0000000000401786 <+172>:   call   0x401240 <exit@plt>
+   0x000000000040178b <+177>:   xor    %r13d,%r13d
+   0x000000000040178e <+180>:   lea    0x1f(%rsp),%r14
+   0x0000000000401793 <+185>:   movzbl 0x7(%rbx),%eax
+   0x0000000000401797 <+189>:   cmp    %r13d,%eax
+   0x000000000040179a <+192>:   jle    0x401839 <handle_1+351>
+   0x00000000004017a0 <+198>:   xor    %ebp,%ebp
+   0x00000000004017a2 <+200>:   movzbl 0x6(%rbx),%r15d
+   0x00000000004017a7 <+205>:   cmp    %ebp,%r15d
+   0x00000000004017aa <+208>:   jle    0x401831 <handle_1+343>
+   0x00000000004017b0 <+214>:   lea    0x1(%r15),%eax
+   0x00000000004017b4 <+218>:   lea    0x99b(%rip),%r8        # 0x402156
+   0x00000000004017bb <+225>:   mov    $0x19,%ecx
+   0x00000000004017c0 <+230>:   mov    %r14,%rdi
+   0x00000000004017c3 <+233>:   imul   %r13d,%eax
+   0x00000000004017c7 <+237>:   mov    $0x19,%esi
+   0x00000000004017cc <+242>:   mov    %eax,0xc(%rsp)
+   0x00000000004017d0 <+246>:   sub    %r13d,%eax
+   0x00000000004017d3 <+249>:   add    %ebp,%eax
+   0x00000000004017d5 <+251>:   push   %rdx
+   0x00000000004017d6 <+252>:   cltq
+   0x00000000004017d8 <+254>:   lea    (%r12,%rax,4),%rax
+   0x00000000004017dc <+258>:   movzbl 0x3(%rax),%edx
+   0x00000000004017e0 <+262>:   push   %rdx
+   0x00000000004017e1 <+263>:   movzbl 0x2(%rax),%edx
+   0x00000000004017e5 <+267>:   push   %rdx
+   0x00000000004017e6 <+268>:   movzbl 0x1(%rax),%edx
+   0x00000000004017ea <+272>:   push   %rdx
+   0x00000000004017eb <+273>:   movzbl (%rax),%r9d
+   0x00000000004017ef <+277>:   mov    $0x1,%edx
+   0x00000000004017f4 <+282>:   xor    %eax,%eax
+   0x00000000004017f6 <+284>:   call   0x401150 <__snprintf_chk@plt>
+   0x00000000004017fb <+289>:   mov    %ebp,%eax
+   0x00000000004017fd <+291>:   mov    0x2c(%rsp),%r10d
+   0x0000000000401802 <+296>:   movups (%r14),%xmm0
+   0x0000000000401806 <+300>:   cltd
+   0x0000000000401807 <+301>:   add    $0x20,%rsp
+   0x000000000040180b <+305>:   inc    %ebp
+   0x000000000040180d <+307>:   idiv   %r15d
+   0x0000000000401810 <+310>:   lea    (%rdx,%r10,1),%eax
+   0x0000000000401814 <+314>:   xor    %edx,%edx
+   0x0000000000401816 <+316>:   divl   0xc(%rbx)
+   0x0000000000401819 <+319>:   imul   $0x18,%rdx,%rdx
+   0x000000000040181d <+323>:   add    0x10(%rbx),%rdx
+   0x0000000000401821 <+327>:   movups %xmm0,(%rdx)
+   0x0000000000401824 <+330>:   mov    0x10(%r14),%rax
+   0x0000000000401828 <+334>:   mov    %rax,0x10(%rdx)
+   0x000000000040182c <+338>:   jmp    0x4017a2 <handle_1+200>
+   0x0000000000401831 <+343>:   inc    %r13d
+   0x0000000000401834 <+346>:   jmp    0x401793 <handle_1+185>
+   0x0000000000401839 <+351>:   mov    0x38(%rsp),%rax
+   0x000000000040183e <+356>:   xor    %fs:0x28,%rax
+   0x0000000000401847 <+365>:   je     0x40184e <handle_1+372>
+   0x0000000000401849 <+367>:   call   0x401190 <__stack_chk_fail@plt>
+   0x000000000040184e <+372>:   add    $0x48,%rsp
+   0x0000000000401852 <+376>:   pop    %rbx
+   0x0000000000401853 <+377>:   pop    %rbp
+   0x0000000000401854 <+378>:   pop    %r12
+   0x0000000000401856 <+380>:   pop    %r13
+   0x0000000000401858 <+382>:   pop    %r14
+   0x000000000040185a <+384>:   pop    %r15
+   0x000000000040185c <+386>:   ret
+End of assembler dump.
+```
+Remember, instruction `main+291` puts the value of `rbx` into `rdi` (our 1st parameter) and the last time `rbx` was assigned value is in instruction `main+134`. The value `$rsp+0x10` is the address of the first 12-bytes input earlier from our .cimg file. At `handle_1+14`, `rbx` was assigned the same value again. This means `rbx` is currently holding the address of our first 12-bytes input.
+
+#### from `handle_1+21` to `handle_1+51`
+The 6th byte (the width) of our first 12-bytes input is put in `ebp` and the 7th byte is put in `edx`. Then, `ebp` is assigned the value `ebp*edx`, which is the total of pixels of our output image at instruction `handle_1+45`. After that, it shifts 2 bytes to the left at instruction `handle_1+51`, meaning quatrupling its size.
+
+#### from `handle_1+55` to `handle_1+84`
+It calls the function `malloc@plt` to allocate `rbp` bytes (total of pixels * 4) and puts the address of that memory allocation into `rsi`, preparing for the next instructions
+
+#### from `handle_1+87` to `handle_1+103`
+It reads `rbp` bytes and put them into the memory that was allocated earlier. `r12` is now holding the address of that memory.
+
+#### from `handle_1+108` to `handle_1+172`
+A loop where it uses `eax` as its iterator and will complete the total of `edx` (which is now representing the number of pixels being processed) loops. Inside the loop, it uses `0x3+r12+rax*4` to extract the last byte of every 4 bytes iterated and then subtract it to 0x20. Then, it compares that value with 0x5e and perform the loop again. In other words, the last byte of every 4 bytes iterated must not be above 0x7e (which is 0x5e+0x20) or else it will exit the program. You can check the message at `0x402124` to confirm it:
+```
+(gdb) x/1s 0x402124
+0x402124:       "ERROR: Invalid character 0x%x in the image data!\n"
+```
+
+#### from `handle_1+177` to `handle_1+346`
+There are double loops where the outside loop uses `r13d` as its iterator and will complete a number of loops, which is the height of our image in this case. The inside loop uses `ebp` as its iterator and will complete a number of loops, which is the width of our image in this case. From `handle_1+214` to `handle_1+301` is the typical process of printing the pixels to `stdout`. These instructions explain why the last byte of every 4 bytes iterated is the character being represented and the first 3 bytes of every 4 bytes iterated is the pixel's color. These must produce the output image that matchs the `desired_output`.
