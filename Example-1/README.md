@@ -161,7 +161,7 @@ End of assembler dump.
 ```
 I wanna point out some noticeable functions and variables:
 
-**`__printf_chk@plt`**:
+**`__printf_chk@plt` or `__fprintf_chk@plt`**:
 This prints error message (put in `rsi` register, the 2nd parameter) and then exit the program. For example:
 ```
 0x00000000004013d1 <+301>:   mov    0xd9c8(%rip),%rdi        # 0x40eda0 <stderr@@GLIBC_2.2.5>
@@ -170,7 +170,7 @@ This prints error message (put in `rsi` register, the 2nd parameter) and then ex
    0x00000000004013e4 <+320>:   xor    %eax,%eax
    0x00000000004013e6 <+322>:   call   0x401250 <__fprintf_chk@plt>
 ```
-The error message is at 0x4022d1, by using `x/1s 0x4022d1`, we can check the error message and figure out the functionality of the code above it:
+The error message is at the address where `rdx` register holds. By using `x/1s 0x4022d1`, we can check the error message and figure out the functionality of the code above it:
 ```
 (gdb) x/1s 0x4022d1
 0x4022d1:       "ERROR: invalid directive_code %ux\n"
