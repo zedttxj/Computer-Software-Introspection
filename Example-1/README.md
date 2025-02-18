@@ -310,7 +310,7 @@ Old value = 0
 New value = 1000
 0x0000000000401aa5 in initialize_framebuffer ()
 ```
-Here, the value is changed to 1848, which is my actual size of my image size (I put my heigh as 50 and my width as 20 for example) and also the same number that will be compared at instruction `main+361`. To delete the watch point, you can use command `info b` to show all the breakpoints` and `delete <id of the breakpoint>` to delete that breakpoint. Another way to track your value is to use these 3 debugging instructions simultaneously: `ni` (which run 1 instruction at a time), `where` (show where's the current `rip` register is, which is also where our instruction pointer at), and `x/1x $rsp+0x1c` (print the value at `$rsp+0x1c`). Instead of typing 3 lines of debugging instructions, you can define another instruction and reuse it like this (here I define `co`):
+Here, the value is changed to 1848, which is my actual size of my image size (I put my heigh as 50 and my width as 20 for example) and also the same number that will be compared at instruction `main+361`. To delete the watch point, you can use command `info b` to show all the breakpoints and `delete <id of the breakpoint>` to delete that breakpoint. Another way to track your value is to use these 3 debugging instructions simultaneously: `ni` (which run 1 instruction at a time), `where` (show where's the current `rip` register is, which is also where our instruction pointer at), and `x/1x $rsp+0x1c` (print the value at `$rsp+0x1c`). Instead of typing 3 lines of debugging instructions, you can define another instruction and reuse it like this (here I define `co`):
 ```
 (gdb) define co
 Redefine command "co"? (y or n) y
@@ -336,6 +336,13 @@ End with a line saying just "end".
 #1  0x0000000000401383 in main ()
 0x7ffe78831b8c: 0x00000000
 ```
-After figuring out where the value is changed, I analyzed the function `initialize_framebuffer`. You can also try adjusting the 12-bytes of your .cimg input and see if there's any changes.
+After figuring out where the value is changed, I analyzed the function `initialize_framebuffer`. You can also try adjusting the 12-bytes of your `.cimg` input file and see if there's any changes. This will tell us the total of pixels produced by our .cimg is in `$rsp+0x1c`.
 Let's continue!
-The value in `$rsp+0x1c` is compared with 0x738 and the `bl` register is set. If it's equal, `bl` register will be 1. Otherwise, it will be 0.
+The value in `r14d` (from `$rsp+0x1c`) is compared with 0x738 and the `bl` register is set. If it's equal, `bl` register will be 1. Otherwise, it will be 0. In other words, if our .cimg file produce the same number of pixels (which is 0x738), `bl` is equal to 1.
+
+#### from `main+371` to `main+442`
+Another loop! Here, `rbp` register is used as an iterator and will perform the total of `r14d` (the size of our output image produced by our .cimg file) loops. Remember, the `memcmp@plt` compare the value starting from the 1st parameter with the value starting from the 2nd parameter for exact number of bytes (which is represented by the 3rd parameter). You can see that there are 0x18 bytes being compared (which is 24 bytes) each loop since `edx` represents the 3rd parameter: `0x000000000040143e <+410>:   mov    $0x18,%edx`
+The value is returned to `eax` after calling a function. The next 2 instructions (`main+426` and `main+428`) moves the value from `r15d` into `ebx` if `eax` is not 0 (which also means the 2 values being compared by `memcmp@plt` function are not equal). This can potentially change the `bl` register since it's the lower 8-bits of the `rbx` register. The 2 instructions `main+434` and `main+438` will shift the pointers 24 bytes forward and compare the next 24 bytes in the next loop.
+
+#### from `main+444` to end
+The instruction at `main+444` compare our actual size of our .cimg file by bytes (stored at total_data). If our size exceeds 0x53c, the program will exit normally without triggering the `win` function. The instruction at `main+457` checks if `bl` is equal to 1. If that's the case, the program won't jump and will trigger `win` function. In this case, we would have to keep our number of pixels produced by our .cimg file equal to 0x738
