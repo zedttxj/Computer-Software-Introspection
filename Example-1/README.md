@@ -489,3 +489,149 @@ There are double loops where the outside loop uses `r13d` as its iterator and wi
 ### Let's try creating our first image
 ![{6F9B598A-D903-4C2D-B763-04FD6A912320}](https://github.com/user-attachments/assets/d1a779b8-bb84-47ed-ae76-9ef89188313e)
 It successfully printed out the image. However, the total of bytes of our .cimg file is 7310, which is not ideal since we have to make it lower than 0x538. Let's try analyze `handle_2` function.
+
+## Analyzing `handle_2` function
+Let's disassemble `handle_2`:
+```
+(gdb) disass handle_2
+Dump of assembler code for function handle_2:
+   0x000000000040185d <+0>:     endbr64
+   0x0000000000401861 <+4>:     push   %r15
+   0x0000000000401863 <+6>:     or     $0xffffffff,%r8d
+   0x0000000000401867 <+10>:    mov    $0x1,%edx
+   0x000000000040186c <+15>:    lea    0x900(%rip),%rcx        # 0x402173
+   0x0000000000401873 <+22>:    push   %r14
+   0x0000000000401875 <+24>:    push   %r13
+   0x0000000000401877 <+26>:    push   %r12
+   0x0000000000401879 <+28>:    mov    %rdi,%r12
+   0x000000000040187c <+31>:    xor    %edi,%edi
+   0x000000000040187e <+33>:    push   %rbp
+   0x000000000040187f <+34>:    push   %rbx
+   0x0000000000401880 <+35>:    sub    $0x38,%rsp
+   0x0000000000401884 <+39>:    mov    %fs:0x28,%rax
+   0x000000000040188d <+48>:    mov    %rax,0x28(%rsp)
+   0x0000000000401892 <+53>:    xor    %eax,%eax
+   0x0000000000401894 <+55>:    lea    0xd(%rsp),%rsi
+   0x0000000000401899 <+60>:    call   0x40167b <read_exact>
+   0x000000000040189e <+65>:    or     $0xffffffff,%r8d
+   0x00000000004018a2 <+69>:    xor    %edi,%edi
+   0x00000000004018a4 <+71>:    lea    0xe(%rsp),%rsi
+   0x00000000004018a9 <+76>:    lea    0x8e2(%rip),%rcx        # 0x402192
+   0x00000000004018b0 <+83>:    mov    $0x1,%edx
+   0x00000000004018b5 <+88>:    call   0x40167b <read_exact>
+   0x00000000004018ba <+93>:    or     $0xffffffff,%r8d
+   0x00000000004018be <+97>:    xor    %edi,%edi
+   0x00000000004018c0 <+99>:    lea    0xb(%rsp),%rsi
+   0x00000000004018c5 <+104>:   lea    0x8e5(%rip),%rcx        # 0x4021b1
+--Type <RET> for more, q to quit, c to continue without paging--c
+   0x00000000004018cc <+111>:   mov    $0x1,%edx
+   0x00000000004018d1 <+116>:   call   0x40167b <read_exact>
+   0x00000000004018d6 <+121>:   xor    %edi,%edi
+   0x00000000004018d8 <+123>:   or     $0xffffffff,%r8d
+   0x00000000004018dc <+127>:   mov    $0x1,%edx
+   0x00000000004018e1 <+132>:   lea    0xc(%rsp),%rsi
+   0x00000000004018e6 <+137>:   lea    0x8e2(%rip),%rcx        # 0x4021cf
+   0x00000000004018ed <+144>:   call   0x40167b <read_exact>
+   0x00000000004018f2 <+149>:   movzbl 0xb(%rsp),%ebx
+   0x00000000004018f7 <+154>:   movzbl 0xc(%rsp),%edx
+   0x00000000004018fc <+159>:   imul   %edx,%ebx
+   0x00000000004018ff <+162>:   movslq %ebx,%rbx
+   0x0000000000401902 <+165>:   shl    $0x2,%rbx
+   0x0000000000401906 <+169>:   mov    %rbx,%rdi
+   0x0000000000401909 <+172>:   call   0x401200 <malloc@plt>
+   0x000000000040190e <+177>:   test   %rax,%rax
+   0x0000000000401911 <+180>:   jne    0x401921 <handle_2+196>
+   0x0000000000401913 <+182>:   lea    0x7b9(%rip),%rdi        # 0x4020d3
+   0x000000000040191a <+189>:   call   0x401170 <puts@plt>
+   0x000000000040191f <+194>:   jmp    0x401979 <handle_2+284>
+   0x0000000000401921 <+196>:   mov    %ebx,%edx
+   0x0000000000401923 <+198>:   mov    %rax,%rsi
+   0x0000000000401926 <+201>:   or     $0xffffffff,%r8d
+   0x000000000040192a <+205>:   xor    %edi,%edi
+   0x000000000040192c <+207>:   lea    0x7d5(%rip),%rcx        # 0x402108
+   0x0000000000401933 <+214>:   mov    %rax,%rbp
+   0x0000000000401936 <+217>:   call   0x40167b <read_exact>
+   0x000000000040193b <+222>:   movzbl 0xc(%rsp),%eax
+   0x0000000000401940 <+227>:   movzbl 0xb(%rsp),%edx
+   0x0000000000401945 <+232>:   imul   %eax,%edx
+   0x0000000000401948 <+235>:   xor    %eax,%eax
+   0x000000000040194a <+237>:   cmp    %eax,%edx
+   0x000000000040194c <+239>:   jle    0x401981 <handle_2+292>
+   0x000000000040194e <+241>:   movzbl 0x3(%rbp,%rax,4),%ecx
+   0x0000000000401953 <+246>:   inc    %rax
+   0x0000000000401956 <+249>:   lea    -0x20(%rcx),%esi
+   0x0000000000401959 <+252>:   cmp    $0x5e,%sil
+   0x000000000040195d <+256>:   jbe    0x40194a <handle_2+237>
+   0x000000000040195f <+258>:   mov    0xd43a(%rip),%rdi        # 0x40eda0 <stderr@@GLIBC_2.2.5>
+   0x0000000000401966 <+265>:   lea    0x7b7(%rip),%rdx        # 0x402124
+   0x000000000040196d <+272>:   mov    $0x1,%esi
+   0x0000000000401972 <+277>:   xor    %eax,%eax
+   0x0000000000401974 <+279>:   call   0x401250 <__fprintf_chk@plt>
+   0x0000000000401979 <+284>:   or     $0xffffffff,%edi
+   0x000000000040197c <+287>:   call   0x401240 <exit@plt>
+   0x0000000000401981 <+292>:   xor    %r13d,%r13d
+   0x0000000000401984 <+295>:   lea    0xf(%rsp),%r15
+   0x0000000000401989 <+300>:   movzbl 0xc(%rsp),%eax
+   0x000000000040198e <+305>:   cmp    %r13d,%eax
+   0x0000000000401991 <+308>:   jle    0x401a41 <handle_2+484>
+   0x0000000000401997 <+314>:   xor    %r14d,%r14d
+   0x000000000040199a <+317>:   movzbl 0xb(%rsp),%ecx
+   0x000000000040199f <+322>:   cmp    %r14d,%ecx
+   0x00000000004019a2 <+325>:   jle    0x401a39 <handle_2+476>
+   0x00000000004019a8 <+331>:   movzbl 0xe(%rsp),%ebx
+   0x00000000004019ad <+336>:   movzbl 0xd(%rsp),%eax
+   0x00000000004019b2 <+341>:   imul   %r13d,%ecx
+   0x00000000004019b6 <+345>:   mov    %r15,%rdi
+   0x00000000004019b9 <+348>:   movzbl 0x6(%r12),%esi
+   0x00000000004019bf <+354>:   lea    0x790(%rip),%r8        # 0x402156
+   0x00000000004019c6 <+361>:   add    %r14d,%eax
+   0x00000000004019c9 <+364>:   add    %r13d,%ebx
+   0x00000000004019cc <+367>:   lea    0x1(%rsi),%edx
+   0x00000000004019cf <+370>:   add    %r14d,%ecx
+   0x00000000004019d2 <+373>:   inc    %r14d
+   0x00000000004019d5 <+376>:   imul   %edx,%ebx
+   0x00000000004019d8 <+379>:   cltd
+   0x00000000004019d9 <+380>:   movslq %ecx,%rcx
+   0x00000000004019dc <+383>:   idiv   %esi
+   0x00000000004019de <+385>:   lea    0x0(%rbp,%rcx,4),%rax
+   0x00000000004019e3 <+390>:   mov    $0x19,%esi
+   0x00000000004019e8 <+395>:   mov    $0x19,%ecx
+   0x00000000004019ed <+400>:   add    %edx,%ebx
+   0x00000000004019ef <+402>:   push   %rdx
+   0x00000000004019f0 <+403>:   movzbl 0x3(%rax),%edx
+   0x00000000004019f4 <+407>:   push   %rdx
+   0x00000000004019f5 <+408>:   movzbl 0x2(%rax),%edx
+   0x00000000004019f9 <+412>:   push   %rdx
+   0x00000000004019fa <+413>:   movzbl 0x1(%rax),%edx
+   0x00000000004019fe <+417>:   push   %rdx
+   0x00000000004019ff <+418>:   movzbl (%rax),%r9d
+   0x0000000000401a03 <+422>:   mov    $0x1,%edx
+   0x0000000000401a08 <+427>:   xor    %eax,%eax
+   0x0000000000401a0a <+429>:   call   0x401150 <__snprintf_chk@plt>
+   0x0000000000401a0f <+434>:   mov    %ebx,%eax
+   0x0000000000401a11 <+436>:   xor    %edx,%edx
+   0x0000000000401a13 <+438>:   movups (%r15),%xmm0
+   0x0000000000401a17 <+442>:   divl   0xc(%r12)
+   0x0000000000401a1c <+447>:   add    $0x20,%rsp
+   0x0000000000401a20 <+451>:   imul   $0x18,%rdx,%rdx
+   0x0000000000401a24 <+455>:   add    0x10(%r12),%rdx
+   0x0000000000401a29 <+460>:   movups %xmm0,(%rdx)
+   0x0000000000401a2c <+463>:   mov    0x10(%r15),%rax
+   0x0000000000401a30 <+467>:   mov    %rax,0x10(%rdx)
+   0x0000000000401a34 <+471>:   jmp    0x40199a <handle_2+317>
+   0x0000000000401a39 <+476>:   inc    %r13d
+   0x0000000000401a3c <+479>:   jmp    0x401989 <handle_2+300>
+   0x0000000000401a41 <+484>:   mov    0x28(%rsp),%rax
+   0x0000000000401a46 <+489>:   xor    %fs:0x28,%rax
+   0x0000000000401a4f <+498>:   je     0x401a56 <handle_2+505>
+   0x0000000000401a51 <+500>:   call   0x401190 <__stack_chk_fail@plt>
+   0x0000000000401a56 <+505>:   add    $0x38,%rsp
+   0x0000000000401a5a <+509>:   pop    %rbx
+   0x0000000000401a5b <+510>:   pop    %rbp
+   0x0000000000401a5c <+511>:   pop    %r12
+   0x0000000000401a5e <+513>:   pop    %r13
+   0x0000000000401a60 <+515>:   pop    %r14
+   0x0000000000401a62 <+517>:   pop    %r15
+   0x0000000000401a64 <+519>:   ret
+End of assembler dump.
+```
