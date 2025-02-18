@@ -664,6 +664,7 @@ with open('./output.cimg','wb') as output:
     output.write(str)
 ```
 ![{0486A35E-A8E4-4ECA-908E-023B4C251087}](https://github.com/user-attachments/assets/510b91d6-b5af-48c2-811e-02e57f289d48)
+
 Nothing changed except the len of the .cimg file! Let's change the first 2 bytes:
 ```
 with open('output.bin','rb') as input:
