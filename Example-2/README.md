@@ -1,4 +1,4 @@
-# Format String 3
+# Format String 3 - picoCTF 2024
 
 ## Description
 This program doesn't contain a win function. How can you win?
