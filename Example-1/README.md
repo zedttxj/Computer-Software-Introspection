@@ -242,7 +242,9 @@ It represents the actual size of our input. It's only used once at `main+444` to
 ```
 0x0000000000401460 <+444>:   cmpq   $0x53c,0xd945(%rip)        # 0x40edb0 <total_data>
 ```
-If our input exceeded 0x53c bytes, the program will exit normally without triggering the `win` function, which is our goal. I figured it out by print the total_data using `p 0x40edb0`
+If our input exceeded 0x53c bytes, the program will exit normally without triggering the `win` function. Our goal is to triggering the `win` function. I figured out this fact by printing the total_data using `p 0x40edb0`
+
+### Running the Program
 
 I start the program using `start output.cimg` where my output.cimg is my cimg file
 
