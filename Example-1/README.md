@@ -271,10 +271,13 @@ If the value from our input is equal to "cIMG", the program won't exit (the exit
 The instruction `0x0000000000401367 <+195>:   cmpw   $0x3,0x14(%rsp)` compare a word (2 bytes) from the 5th byte of our 12-bytes input earlier with 0x3 (our 12-bytes input starts at `$rsp+0x10`). If it's not equal, it will come back to `main+182` and start the exiting process.
 
 #### from `main+223` to `main+327` (the loop)
-It moves 4 bytes starting at the 8th byte from our 12-bytes input earlier into `eax` register. Then, it starts to perform a loop that uses `eax` as its iterator and decrease it by 1 every 1 loop until it's equal to 0 (you can see that fact at instruction `main+234` and `main+236` where `main+332` is the end of the loop. Inside the loop, it reads 2 bytes (from `main+254` to `main+259`) and then put them at the address in `rbp` register, which is also holding the address of `$rsp+0xe`. If the value is 0x1, it calls handle_1 function. If it's 0x2, it calls handle_2 function. If it's other values, it calls `__fprintf_chk@plt` and print the error message stored at 0x4022d1:
+It moves 4 bytes starting at the 8th byte from our 12-bytes input earlier into `eax` register. Then, it starts to perform a loop that uses `eax` as its iterator and decrease it by 1 every 1 loop until it's equal to 0 (you can see that fact at instruction `main+234` and `main+236` where `main+332` is the end of the loop. Inside the loop, it reads 2 bytes (from `main+254` to `main+259`) and then put them at the address in `rbp` register, which is also holding the address of `$rsp+0xe`. If the value is 0x1, it calls `handle_1` function. If it's 0x2, it calls `handle_2` function. If it's other values, it calls `__fprintf_chk@plt` and print the error message stored at 0x4022d1:
 ```
 (gdb) x/1s 0x4022d1
 0x4022d1:       "ERROR: invalid directive_code %ux\n"
 ```
 After calling the function, it will iterate again (`0x00000000004013eb <+327>:   jmp    0x40135f <main+187>`)
+The function `handle_1` and function `handle_2` have different ways to process our data and we will analyze it later. After this loop, our `.cimg` file is completedly processed.
 
+#### from `main+332` to `main+387`
+The total size of the image
