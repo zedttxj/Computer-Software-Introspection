@@ -635,3 +635,61 @@ Dump of assembler code for function handle_2:
    0x0000000000401a64 <+519>:   ret
 End of assembler dump.
 ```
+Unlike `handle_1`, this time, the address of the 12-bytes input earlier is put in `r12`. There are 4 noticeable variables that contains another 4 bytes of our input (following in order): `$rsp+0xd`, `$rsp+0xe`, `$rsp+0xb`, and `$rsp+0xc`. After these 4 bytes are read, the program allocates memory with the total of bytes equivalent to `$rsp+0xb` times `$rsp+0xc` times 4. The same number of bytes are read and put into the memory that was allocated. Similar to `handle_1`, the program checks the last byte of every 4 bytes iterated if its value exceeds 0x7e. The following is almost similar to `handle_1` as well, which beg the question: how does the program handles the first 2 bytes `$rsp+0xd` and `$rsp+0xe`? We saw some calculations and to confirm our hypothesis, we will try to put it in our program.
+Here's the temporary solution:
+```
+with open('output.bin','rb') as input:
+    dat = input.read()
+data = []
+color = []
+for i in range(0x738):
+    if dat[i*24+19] == 10: continue
+    data.append(dat[i*24+19])
+    color += [dat[i*24+7:i*24+18].split(b";")]
+colors = [] # colors of the pixel
+for i in color:
+    colors += [bytes([int(j) for j in i])]
+# print(colors)
+# print(len(colors), len(data))
+
+with open('./output.cimg','wb') as output:
+    str = b"cIMG\x03\x00\x4c\x18" # 0x4c is the width and 0x18 is the height according to the desired output
+    str += b"\x01\x00\x00\x00" # We only use 1 directive, which is handle_1
+    str += b"\x02\x00" # Calling handle_2
+    str += b"\x00\x00" # Let's put both bytes 0 for now
+    str += b"\x4c\x18" # The width and the length
+    for i in range(0x4c*0x18):
+        str += colors[i]+bytes([data[i]])
+    print(len(str))
+    output.write(str)
+```
+![{0486A35E-A8E4-4ECA-908E-023B4C251087}](https://github.com/user-attachments/assets/510b91d6-b5af-48c2-811e-02e57f289d48)
+Nothing changed except the len of the .cimg file! Let's change the first 2 bytes:
+```
+with open('output.bin','rb') as input:
+    dat = input.read()
+data = []
+color = []
+for i in range(0x738):
+    if dat[i*24+19] == 10: continue
+    data.append(dat[i*24+19])
+    color += [dat[i*24+7:i*24+18].split(b";")]
+colors = [] # colors of the pixel
+for i in color:
+    colors += [bytes([int(j) for j in i])]
+# print(colors)
+# print(len(colors), len(data))
+
+with open('./output.cimg','wb') as output:
+    str = b"cIMG\x03\x00\x4c\x18" # 0x4c is the width and 0x18 is the height according to the desired output
+    str += b"\x01\x00\x00\x00" # We only use 1 directive, which is handle_1
+    str += b"\x02\x00" # Calling handle_2
+    str += b"\x01\x01" # Let's put both bytes 0 for now
+    str += b"\x4c\x18" # The width and the length
+    for i in range(0x4c*0x18):
+        str += colors[i]+bytes([data[i]])
+    print(len(str))
+    output.write(str)
+```
+![{6F39844A-9E5B-4B85-BD0E-AFD2259FCCCA}](https://github.com/user-attachments/assets/1bd5660a-30b4-4361-8465-91b2dd329f50)
+This time, the image moves a little. After a few tries, I figured out that the first 2 bytes adjust the position of the image. Instead of writing the whole images, we can just write only a few pixels that aren't blank (not the empty space character). By filtering it out, we can reduce significantly the size of our .cimg file:
