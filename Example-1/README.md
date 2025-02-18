@@ -486,4 +486,6 @@ A loop where it uses `eax` as its iterator and will complete the total of `edx` 
 #### from `handle_1+177` to `handle_1+346`
 There are double loops where the outside loop uses `r13d` as its iterator and will complete a number of loops, which is the height of our image in this case. The inside loop uses `ebp` as its iterator and will complete a number of loops, which is the width of our image in this case. From `handle_1+214` to `handle_1+301` is the typical process of printing the pixels to `stdout`. These instructions explain why the last byte of every 4 bytes iterated is the character being represented and the first 3 bytes of every 4 bytes iterated is the pixel's color. These must produce the output image that matchs the `desired_output`.
 
-## Let's try creating our first image
+### Let's try creating our first image
+![{6F9B598A-D903-4C2D-B763-04FD6A912320}](https://github.com/user-attachments/assets/d1a779b8-bb84-47ed-ae76-9ef89188313e)
+It successfully printed out the image. However, the total of bytes of our .cimg file is 7310, which is not ideal since we have to make it lower than 0x538. Let's try analyze `handle_2` function.
