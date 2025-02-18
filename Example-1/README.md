@@ -279,5 +279,63 @@ It moves 4 bytes starting at the 8th byte from our 12-bytes input earlier into `
 After calling the function, it will iterate again (`0x00000000004013eb <+327>:   jmp    0x40135f <main+187>`)
 The function `handle_1` and function `handle_2` have different ways to process our data and we will analyze it later. After this loop, our `.cimg` file is completedly processed.
 
-#### from `main+332` to `main+387`
-The total size of the image
+#### from `main+332` to `main+368`
+The total size of our input image is put in `$rsp+0x1c`. To adjust this size, we can adjust the width of the image (the 7-th byte from the 12-bytes input earlier) and the height of the image (the 8-th byte from the 12-bytes input earlier). I figured this out by first seeing where the `$rsp+0x1c` changes its value. Adding watchpoint like this can help the process of finding faster: `(gdb) watch *(long *)($rsp+0x1c)`. This instruction would calculate the value of `$rsp+0x1c`, extract 8 bytes (which explains why I use long here) and dereferrence it. However, every time some functions are called, there's a high chance that the stack pointer register (`rsp`) has changed, leading to triggering the breakpoint a lot of times. The better way to do this is to put a watchpoint on a specific value:
+```
+(gdb) start output.cimg
+Temporary breakpoint 14 at 0x4012a4
+Starting program: /challenge/cimg output.cimg
+
+Temporary breakpoint 14, 0x00000000004012a4 in main ()
+(gdb) break *main+53
+Breakpoint 15 at 0x4012d9
+(gdb) c
+Continuing.
+
+Breakpoint 15, 0x00000000004012d9 in main ()
+(gdb) p $rsp
+$1 = (void *) 0x7ffe78831bc0
+(gdb) watch *(long *)(0x7ffe78831bc0+0x1c)
+Hardware watchpoint 16: *(long *)(0x7ffe78831bc0+0x1c)
+(gdb) c
+Continuing.
+
+Breakpoint 8, 0x000000000040137e in main ()
+(gdb) c
+Continuing.
+
+Hardware watchpoint 16: *(long *)(0x7ffe78831bc0+0x1c)
+
+Old value = 0
+New value = 1000
+0x0000000000401aa5 in initialize_framebuffer ()
+```
+Here, the value is changed to 1848, which is my actual size of my image size (I put my heigh as 50 and my width as 20 for example) and also the same number that will be compared at instruction `main+361`. To delete the watch point, you can use command `info b` to show all the breakpoints` and `delete <id of the breakpoint>` to delete that breakpoint. Another way to track your value is to use these 3 debugging instructions simultaneously: `ni` (which run 1 instruction at a time), `where` (show where's the current `rip` register is, which is also where our instruction pointer at), and `x/1x $rsp+0x1c` (print the value at `$rsp+0x1c`). Instead of typing 3 lines of debugging instructions, you can define another instruction and reuse it like this (here I define `co`):
+```
+(gdb) define co
+Redefine command "co"? (y or n) y
+Type commands for definition of "co".
+End with a line saying just "end".
+>ni
+>where
+>x/1x $rsp+0x1c
+>end
+(gdb) co
+0x0000000000401abc in initialize_framebuffer ()
+#0  0x0000000000401abc in initialize_framebuffer ()
+#1  0x0000000000401383 in main ()
+0x7ffe78831b8c: 0x00000000
+(gdb)
+0x0000000000401ad2 in initialize_framebuffer ()
+#0  0x0000000000401ad2 in initialize_framebuffer ()
+#1  0x0000000000401383 in main ()
+0x7ffe78831b8c: 0x00000000
+(gdb)
+0x0000000000401ad4 in initialize_framebuffer ()
+#0  0x0000000000401ad4 in initialize_framebuffer ()
+#1  0x0000000000401383 in main ()
+0x7ffe78831b8c: 0x00000000
+```
+After figuring out where the value is changed, I analyzed the function `initialize_framebuffer`. You can also try adjusting the 12-bytes of your .cimg input and see if there's any changes.
+Let's continue!
+The value in `$rsp+0x1c` is compared with 0x738 and the `bl` register is set. If it's equal, `bl` register will be 1. Otherwise, it will be 0.
