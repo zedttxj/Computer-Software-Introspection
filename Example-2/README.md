@@ -136,5 +136,9 @@ b'libc.so.6\n'
 b'metadata.json\n'
 b'profile\n'
 ```
-We successfully execute another `/bin/sh` shell. We also listed all the files in the current directive using `ls` and found out `flag.txt`
+We successfully execute another `/bin/sh` shell. We also listed all the files in the current directive using `ls` and found out `flag.txt`. By adding `p.interactive()` at the end of the code, you can interact with the shell.
 ```
+p.sendline(payload)
+p.interactive()
+```
+picoCTF{G07_G07?_cf6cb591}
