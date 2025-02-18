@@ -252,4 +252,27 @@ I used `x/1s 0x402224` and saw the message:
 (gdb) x/1s 0x402224
 0x402224:       ".cimg"
 ```
-The string ".cimg" (in 2nd parameter or rsi register) is compared with another string. I assume that the other string is the last 4 characters of the name of the file you put in (in this case is `output.cimg`). The `test %eax, %eax` checks if the value of strcmp is 0, then jump if it's 0.
+The string ".cimg" (in 2nd parameter or rsi register) is compared with another string. I assume that the other string is the last 4 characters of the name of the file you put in (in this case is `output.cimg`). The `test %eax, %eax` checks if the value of strcmp is 0, then jump to `main+113` if it's 0.
+
+#### from `main+113` to `main+129`
+It opens the file that the `rbp` register still holds (the file's name in this case is my `output.cimg`).
+
+#### from `main+145` to `main+190`
+The instruction `0x0000000000401335 <+145>:   mov    $0xc,%edx` moves the value 0xc (which is 12 in decimal) into `edx` register, which is the 3rd parameter if we call a function. In this case, we call read_exact. Reminds you that read_exact use 3rd paramenter as a size of the input it will takes. In conclusion, the program will read 12 bytes and put it at the address `$rsp+0x10` (not deferencing). After that, it compares the first 4 bytes of those 12 bytes with 0x474d4963, which is also the string value "cIMG":
+```
+(gdb) p (char[4])0x474d4963
+$4 = "cIMG"
+```
+If the value from our input is equal to "cIMG", the program won't exit (the exiting process starts from `main+175` to `main+190`)
+
+#### from `main+195` to `main+208`
+The instruction `0x0000000000401367 <+195>:   cmpw   $0x3,0x14(%rsp)` compare a word (2 bytes) from the 5th byte of our 12-bytes input earlier with 0x3 (our 12-bytes input starts at `$rsp+0x10`). If it's not equal, it will come back to `main+182` and start the exiting process.
+
+#### from `main+223` to `main+327` (the loop)
+It moves 4 bytes starting at the 8th byte from our 12-bytes input earlier into `eax` register. Then, it starts to perform a loop that uses `eax` as its iterator and decrease it by 1 every 1 loop until it's equal to 0 (you can see that fact at instruction `main+234` and `main+236` where `main+332` is the end of the loop. Inside the loop, it reads 2 bytes (from `main+254` to `main+259`) and then put them at the address in `rbp` register, which is also holding the address of `$rsp+0xe`. If the value is 0x1, it calls handle_1 function. If it's 0x2, it calls handle_2 function. If it's other values, it calls `__fprintf_chk@plt` and print the error message stored at 0x4022d1:
+```
+(gdb) x/1s 0x4022d1
+0x4022d1:       "ERROR: invalid directive_code %ux\n"
+```
+After calling the function, it will iterate again (`0x00000000004013eb <+327>:   jmp    0x40135f <main+187>`)
+
