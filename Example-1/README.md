@@ -310,7 +310,7 @@ Old value = 0
 New value = 1000
 0x0000000000401aa5 in initialize_framebuffer ()
 ```
-Here, the value is changed to 1848, which is my actual size of my image size (I put my heigh as 50 and my width as 20 for example) and also the same number that will be compared at instruction `main+361`. To delete the watch point, you can use command `info b` to show all the breakpoints and `delete <id of the breakpoint>` to delete that breakpoint. Another way to track your value is to use these 3 debugging instructions simultaneously: `ni` (which run 1 instruction at a time), `where` (show where's the current `rip` register is, which is also where our instruction pointer at), and `x/1x $rsp+0x1c` (print the value at `$rsp+0x1c`). Instead of typing 3 lines of debugging instructions, you can define another instruction and reuse it like this (here I define `co`):
+Here, the value is changed to 1000, which is my actual size of my image size (I put my heigh as 50 and my width as 20 for example) and also the same number that will be compared at instruction `main+361`. To delete the watch point, you can use command `info b` to show all the breakpoints and `delete <id of the breakpoint>` to delete that breakpoint. Another way to track your value is to use these 3 debugging instructions simultaneously: `ni` (which run 1 instruction at a time), `where` (show where's the current `rip` register is, which is also where our instruction pointer at), and `x/1x $rsp+0x1c` (print the value at `$rsp+0x1c`). Instead of typing 3 lines of debugging instructions, you can define another instruction and reuse it like this (here I define `co`):
 ```
 (gdb) define co
 Redefine command "co"? (y or n) y
