@@ -697,7 +697,7 @@ with open('./output.cimg','wb') as output:
 This time, the image moves a little. After a few tries, I figured out that the first 2 bytes adjust the position of the image. Instead of writing the whole images, we can just write only a few pixels that aren't blank (not the empty space character). By filtering it out, we can reduce significantly the size of our .cimg file:
 ![{09147DF2-9662-4E53-AE5C-32C247392BBA}](https://github.com/user-attachments/assets/2d005a50-d045-485c-98ce-98392de63a3d)
 
-That's great! The size of our .cimg was reduced down to 2762. However, this is still long and to reduce the size of the image further, it would requires some algorithm skills. Basically, we have to divide our data into chunk of rectangles. That way we can reduce unnecessary bytes from calling too many directives. I will paint different colors to different rectangles to show how the `rec` function breaks down the image into rectangles:
+That's great! The size of our .cimg was reduced down to 2762. However, this is still long and to reduce the size of the image further, it would requires some algorithm skills. Basically, we have to divide our data into chunk of rectangles. That way we can reduce unnecessary bytes from calling too many directives. I will paint different colors to different rectangles to show how the `rec` function (coded by me and put in `solution.py`) breaks down the image into rectangles:
 ![{763F8143-2ED1-4E77-8417-42D588492892}](https://github.com/user-attachments/assets/af4a6aee-4cf8-4bc9-b5ea-003f456eb5bd)
 
 After running `solution.py`:
