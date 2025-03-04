@@ -36,4 +36,4 @@ for i in range(256):
 for i in flag:
     if not i in ls: ls.append(i)
     str += bytes([txt.index(ch[ls.index(i)])])
-pritn(str)
+print(str)
