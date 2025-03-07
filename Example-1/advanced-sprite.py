@@ -19,8 +19,6 @@ with open('output.cimg','wb') as output:
     str = b""
     cnt = 0
     for i in range(len(sz)):
-        #str += b"\x02\x00"+bytes(sz[i])
-        #str += b"\x03\x00"+bytes([i])+bytes(sz[i][2:])
         tmp = b""
         for h in range(sz[i][1],sz[i][1]+sz[i][3]):
             for w in range(sz[i][0],sz[i][0]+sz[i][2]):
