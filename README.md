@@ -22,7 +22,7 @@ This repository contains a collection of scripts, tools, and methodologies for p
 ---
 
 ## Acknowledgement
-I finished all of these modules from **pwn.college**, but will only demonstrate few examples here. You can check my profile on the [website].(https://pwn.college/hacker/1o1). If you need solutions for specific problems, please contact me.
+I finished all of these modules from **pwn.college**, but will only demonstrate few examples here. You can check my profile on the [website].(https://pwn.college/hacker/1o1). If you need solutions for specific problems, please contact me. Original repo of this content is [here](https://github.com/zedttxj/Web-Security-Exploits/tree/main/Example-1)
 # Web-Security-Exploits (Server Penetration Testing) - *[pwn.college](https://pwn.college/cse365-f2024/web-security/)*
 
 This repository showcases a web security project I have worked on as part of my training and exploration of cybersecurity. This project demonstrate a range of skills and techniques, including exploiting vulnerabilities and performing attacks.
